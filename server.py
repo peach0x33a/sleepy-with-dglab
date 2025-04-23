@@ -153,15 +153,21 @@ def index():
         lantern=env.page.lantern,
         mplayer=env.page.mplayer,
         bg=env.page.background,
+        coyotegamehub=env.page.coyotegamehub,
 
         steam_legacy_enabled=env.util.steam_legacy_enabled,
         steam_enabled=env.util.steam_enabled,
         steamkey=env.util.steam_key,
         steamids=env.util.steam_ids,
 
+        coyotegamehub_host=env.coyotegamehub.host,
+        coyotegamehub_clientid=env.coyotegamehub.clientid,
+
         status_name=stat['name'],
         status_color=stat['color'],
         status_desc=stat['desc'],
+
+
 
         last_updated=d.data['last_updated'],
         debug=env.main.debug
@@ -431,7 +437,56 @@ def events():
     response.headers["X-Accel-Buffering"] = "no"  # 禁用 Nginx 缓冲
     return response
 
+async def CoyoteGameHubFire():
+    _host = env.coyotegamehub.host
+    _clientid = env.coyotegamehub.clientid
+    u.debug(f"_host: {_host}")
+    u.debug(f"_clientid: {_clientid}")
 
+    if not _host or not _clientid:
+        return {"status": "failed", "message": "配置不完整"}
+
+    url = f"http://{_host}/api/v2/game/{_clientid}/action/fire"
+    headers = {
+        "Content-Type": "application/json"
+    }
+    data = {
+        "strength": "20",
+        "time": "5000",
+        "override": "false",
+        "pulseId": "d6f83af0" 
+    }
+    u.debug(f"url: {url}")
+    u.debug(f"headers: {headers}")
+    u.debug(f"data: {data}")
+    try:
+        import requests
+        response = requests.post(url, headers=headers,json=data)
+        if response.status_code == 200:
+            return {"status": "success", "message": "请求成功", "data": response.json()}
+        else:
+            return {"status": "failed", "message": f"请求失败，状态码: {response.status_code}"}
+    except Exception as e:
+        return {"status": "failed", "message": f"请求异常: {str(e)}"}
+
+# --- Toys
+if env.util.metrics:
+    @app.route("/toys", methods=["GET"])
+
+    # @require_secret
+    def toys():
+        accesskey = flask.request.headers.get('coyotegamehub-accesskey')
+        # 验证 accesskey
+        if not accesskey or accesskey != env.coyotegamehub.accesskey:
+        # if not accesskey or accesskey != env.coyotegamehub.accesskey:
+            return flask.jsonify({
+                "status": "failed",
+                "message": "Access denied, no vaild accesskey"
+            }), 403
+        import asyncio
+        result = asyncio.run(CoyoteGameHubFire())
+        return flask.jsonify(result)
+    # return f"郊狼运行完成，强度{d.data['DGLab']['strength']}，持续{d.data['DGLab']['duration']}秒！"
 # --- Special
 
 if env.util.metrics:

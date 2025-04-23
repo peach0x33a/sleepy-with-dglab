@@ -1,0 +1,94 @@
+.dglab {
+  background-color: #171717;
+  box-shadow: 0 8px 32px #ffe99d;
+  color: #ffe99d;
+  border: 3px solid #ffe99d;
+}
+.dglab-card {
+  border-radius: 30px;
+  padding: 2rem 1rem;
+  margin: 1rem auto;
+  font-size: 1.1em;
+  width: 40%;
+  text-align: center;
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  position: relative;
+  box-shadow: 0 8px 32px #ffe99d;
+  transition: all 0.5s;
+}
+.dglab-card:hover {
+  transition: all 0.3s;
+  transform: translateY(-5px);
+  box-shadow: 0 12px 40px #ffe99d;
+}
+/* 按钮样式 */
+.cygotegamehub-panel button {
+  box-sizing: border-box;
+  border: #ffe99d 2px solid;
+  color: #ffe99d;
+  font-size: 20px;
+  height: 56px;
+  display: inline-block;
+  font-weight: 600;
+  text-align: center;
+  vertical-align: middle;
+  user-select: none;
+  border-radius: 10px;
+  cursor: pointer;
+  background-color: #171717;
+  transition: all 0.3s ease-in-out;
+  text-align: center;
+}
+
+.cygotegamehub-panel button:hover {
+  border: #171717 2px solid;
+  color: #171717;
+  background-color: #ffe99d;
+}
+
+/* 图标样式 */
+.text-icon {
+  width: 2em;
+  height: 2em;
+  vertical-align: middle;
+  margin-right: 0.25em;
+}
+
+/* 面板样式 */
+.cygotegamehub-panel h4 {
+  font-size: 30px;
+}
+
+/* 输入框样式 */
+.accesskey-input {
+  margin-bottom: 1rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.accesskey-input input {
+  padding: 0.5rem;
+  border: 1px solid #ffe99d;
+  border-radius: 5px;
+  background-color: #171717;
+  color: #ffe99d;
+  flex-grow: 1;
+}
+
+.accesskey-input button {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ffe99d;
+  border-radius: 5px;
+  background-color: #171717;
+  color: #ffe99d;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+
+.accesskey-input button:hover {
+  background-color: #ffe99d;
+  color: #171717;
+}

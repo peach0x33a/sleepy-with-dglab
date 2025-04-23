@@ -56,6 +56,7 @@ class _page:
     lantern: bool = getenv('sleepy_page_lantern', False, bool)
     mplayer: bool = getenv('sleepy_page_mplayer', False, bool)
     zhixue: bool = getenv('sleepy_page_zhixue', False, bool)
+    coyotegamehub: bool = getenv('sleepy_page_coyotegamehub', False, bool)
 
 
 class _status:
@@ -79,8 +80,17 @@ class _util:
     steam_key: str = getenv('sleepy_util_steam_key', '', str)
     steam_ids: str = getenv('sleepy_util_steam_ids', '', str)
 
+class _coyotegamehub:
+    '''
+    coyotegamehub 功能配置
+    '''
 
+    host:str = getenv('sleepy_coyotegamehub_host', '127.0.0.1:8920', str)
+    clientid:str = getenv('sleepy_coyotegamehub_clientid', 'all', str)
+    accesskey:str = getenv('sleepy_coyotegamehub_accesskey', 'DO_NOT_LEAK_THIS', str)
+    
 main = _main()
 page = _page()
 status = _status()
 util = _util()
+coyotegamehub = _coyotegamehub()

@@ -1,0 +1,67 @@
+<!-- COLOR -->
+<!-- #FFE99D -->
+<link rel="stylesheet" href="{{ url_for('static', filename='coyotegamehub.css') }}">
+<script>
+    // 保存 accesskey 到 localStorage
+    function saveAccessKey() {
+        const accessKey = document.getElementById('accesskeyInput').value;
+        if (accessKey) {
+            localStorage.setItem('coyotegamehub_accesskey', accessKey);
+            document.getElementById('message').textContent = 'AccessKey 已保存';
+        } else {
+            document.getElementById('message').textContent = '请输入有效的 AccessKey';
+        }
+    }
+
+    // 从 localStorage 获取 accesskey
+    function getAccessKey() {
+        return localStorage.getItem('coyotegamehub_accesskey') || '';
+    }
+
+    async function coyotegamehub_btn_click() {
+        const accessKey = getAccessKey();
+        if (!accessKey) {
+            document.getElementById('message').textContent = '请先保存 AccessKey';
+            return;
+        }
+
+        document.getElementById('message').textContent = '正在发送请求...';
+
+        try {
+            const response = await fetch('/toys', {
+                method: 'GET',
+                headers: {
+                    'coyotegamehub-accesskey': accessKey
+                }
+            });
+            
+            const data = await response.json();
+            console.log('Response:', data);
+
+            if (data.data?.status === 1) {
+                const successCount = data.data.successClientIds.length;
+                document.getElementById('message').textContent = data.data.message;
+            } else {
+                document.getElementById('message').textContent = `操作失败: ${data.data.message}`;
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            document.getElementById('message').textContent = '请求出错，请检查控制台';
+        }
+    }
+</script>
+
+<div class="dglab-card dglab cygotegamehub-panel" id="coyotegamehub">
+    <h4>奇妙小玩具控制面板</h4>
+    <p>请在下方输入Accesskey</p>
+    <div class="accesskey-input">
+        <input type="password" id="accesskeyInput" placeholder="请输入 AccessKey">
+        <button onclick="saveAccessKey()">保存</button>
+    </div>
+    <button onclick="coyotegamehub_btn_click()" class="btn">
+        雷元素攻击！
+    </button>
+    <div id="message" style="margin-top: 1rem; color: #FFE99D;"></div>
+    <div id="error" style="margin-top: 1rem; color: #FFE99D;"></div>
+
+</div>
