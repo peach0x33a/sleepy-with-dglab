@@ -2,16 +2,18 @@
 # coding: utf-8
 
 import time
-import json5
-# import importlib  # for plugin
-import pytz
-import flask
 from datetime import datetime
-from markupsafe import escape
 from functools import wraps  # 用于修饰器
 
-import utils as u
+import flask
+import json5
+
+# import importlib  # for plugin
+import pytz
+from markupsafe import escape
+
 import env
+import utils as u
 from data import data as data_init
 from setting import status_list
 
@@ -64,11 +66,10 @@ def showip():
     path = flask.request.path
     # --- log
     ip1 = flask.request.remote_addr
-    try:
-        ip2 = flask.request.headers['X-Forwarded-For']
+    ip2 = flask.request.headers.get('X-Forwarded-For')
+    if ip2:
         u.info(f'- Request: {ip1} / {ip2} : {path}')
-    except:
-        ip2 = None
+    else:
         u.info(f'- Request: {ip1} : {path}')
     # --- count
     if env.util.metrics:
@@ -82,33 +83,33 @@ def require_secret(view_func):
     @wraps(view_func)
     def wrapped_view(*args, **kwargs):
         # 1. body
-        body: dict = flask.request.get_json(silent=True)
-        if body:
-            if body.get('secret') == env.main.secret:
-                u.debug('[Auth] Verify secret Success from Body')
-                return view_func(*args, **kwargs)
+        body: dict = flask.request.get_json(silent=True) or {}
+        if body and body.get('secret') == env.main.secret:
+            u.debug('[Auth] Verify secret Success from Body')
+            return view_func(*args, **kwargs)
+
         # 2. param
         elif flask.request.args.get('secret') == env.main.secret:
             u.debug('[Auth] Verify secret Success from Param')
             return view_func(*args, **kwargs)
-        # 3. header
+
+        # 3. header (Sleepy-Secret)
+        # -> Sleepy-Secret: my-secret
         elif flask.request.headers.get('Sleepy-Secret') == env.main.secret:
-            u.debug('[Auth] Verify secret Success from Header Sleepy-Secret')
+            u.debug('[Auth] Verify secret Success from Header (Sleepy-Secret)')
             return view_func(*args, **kwargs)
-        # 4. header - Bearer token
-        elif flask.request.headers.get('Authorization'):
-            auth_header = flask.request.headers.get('Authorization')
-            if auth_header.startswith('Bearer '):
-                token = auth_header[7:]
-                if token == env.main.secret:
-                    u.debug('[Auth] Verify Bearer token Success from Header Authorization')
-                    return view_func(*args, **kwargs)
-            u.debug('[Auth] Invalid Bearer token format or token')
+
+        # 4. header (Authorization)
+        # -> Authorization: Bearer my-secret
+        elif flask.request.headers.get('Authorization')[7:] == env.main.secret:
+            u.debug('[Auth] Verify secret Success from Header (Authorization)')
+            return view_func(*args, **kwargs)
+
         # -1. no any secret
         u.debug('[Auth] Verify secret Failed')
         return u.reterr(
             code='not authorized',
-            message='invaild secret'
+            message='wrong secret'
         )
     return wrapped_view
 
@@ -147,6 +148,7 @@ def index():
         learn_more=env.page.learn_more,
         repo=env.page.repo,
         more_text=more_text,
+        sorted=env.page.sorted,
         hitokoto=env.page.hitokoto,
         canvas=env.page.canvas,
         moonlight=env.page.moonlight,
@@ -159,6 +161,7 @@ def index():
         steam_enabled=env.util.steam_enabled,
         steamkey=env.util.steam_key,
         steamids=env.util.steam_ids,
+        steam_refresh_interval=env.util.steam_refresh_interval,
 
         coyotegamehub_host=env.coyotegamehub.host,
         coyotegamehub_clientid=env.coyotegamehub.clientid,
@@ -212,7 +215,10 @@ def query(ret_as_dict: bool = False):
             'desc': f'未知的标识符 {st}，可能是配置问题。',
             'color': 'error'
         }
-    devicelst = d.data['device_status']
+    if env.page.sorted:
+        devicelst = dict(sorted(d.data["device_status"].items()))
+    else:
+        devicelst = d.data["device_status"]
     if d.data['private_mode']:
         devicelst = {}
     timenow = datetime.now(pytz.timezone(env.main.timezone))
@@ -504,23 +510,22 @@ if env.util.steam_enabled:
     def steam():
         return flask.render_template(
             'steam-iframe.html',
-            steamids=env.util.steam_ids
+            steamids=env.util.steam_ids,
+            steam_refresh_interval=env.util.steam_refresh_interval
         )
 
 # --- End
 
 if __name__ == '__main__':
     u.info(f'=============== hi {env.page.user}! ===============')
-    # plugins - disabled
+    # --- plugins - undone
     # u.info(f'Loading plugins...')
     # all_plugins = u.list_dir(u.get_path('plugin'), include_subfolder=False, ext='.py')
     # enabled_plugins = []
     # for i in all_plugins:
     #     pass
-    # launch
-    host = env.main.host
-    port = env.main.port
-    u.info(f'Starting server: {host}:{port}{" (debug enabled)" if env.main.debug else ""}')
+    # --- launch
+    u.info(f'Starting server: {env.main.host}:{env.main.port}{" (debug enabled)" if env.main.debug else ""}')
     try:
         app.run(  # 启↗动↘
             host=env.main.host,
@@ -528,8 +533,7 @@ if __name__ == '__main__':
             debug=env.main.debug
         )
     except Exception as e:
-        u.error(f"Error starting server: {e}")
-        exit(1)
+        u.error(f"Error running server: {e}")
     print()
     u.info('Server exited, saving data...')
     d.save()

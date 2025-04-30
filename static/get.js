@@ -48,8 +48,8 @@ async function checkVercelDeploy() {
     console.log(`[Vercel] 测试请求 ${baseUrl + 'none'} 中...`);
     return await fetch(baseUrl + 'none', { timeout: 10000 })
         .then(resp => {
-            xVercelId = resp.headers.get('x-vercel-id');
-            console.log(`[Vercel] 获取到 x-vercel-id: ${resp.headers.get('x-vercel-id')}`);
+            const xVercelId = resp.headers.get('x-vercel-id');
+            console.log(`[Vercel] 获取到 x-vercel-id: ${xVercelId}`);
             if (xVercelId) {
                 console.log(`[Vercel] 确定为 Vercel 部署`);
                 return true;
@@ -138,7 +138,7 @@ let connectionCheckTimer = null;
 let lastEventTime = Date.now();
 let connectionAttempts = 0;
 let firstError = true; // 是否为 SSR 第一次出错 (如是则激活 Vercel 部署检测)
-const maxReconnectDelay = 30000; // 最大重连延迟时间为30秒
+const maxReconnectDelay = 30000; // 最大重连延迟时间为 30 秒
 
 // 重连函数
 function reconnectWithDelay(delay) {
@@ -148,7 +148,7 @@ function reconnectWithDelay(delay) {
     }
 
     reconnectInProgress = true;
-    console.log(`[SSE] 安排在${delay / 1000}秒后重连`);
+    console.log(`[SSE] 安排在 ${delay / 1000} 秒后重连`);
 
     // 清除可能存在的倒计时
     if (countdownInterval) {
@@ -169,13 +169,13 @@ function reconnectWithDelay(delay) {
     let remainingSeconds = Math.floor(delay / 1000);
     const lastUpdatedElement = document.getElementById('last-updated');
     if (lastUpdatedElement) {
-        lastUpdatedElement.innerHTML = `连接服务器失败，${remainingSeconds}秒后重新连接... <a href="javascript:location.reload();" target="_self" style="color: rgb(0, 255, 0);">刷新页面</a>`;
+        lastUpdatedElement.innerHTML = `连接服务器失败，${remainingSeconds} 秒后重新连接... <a href="javascript:location.reload();" target="_self" style="color: rgb(0, 255, 0);">刷新页面</a>`;
     }
 
     countdownInterval = setInterval(() => {
         remainingSeconds--;
         if (remainingSeconds > 0 && lastUpdatedElement) {
-            lastUpdatedElement.innerHTML = `连接服务器失败，${remainingSeconds}秒后重新连接... <a href="javascript:location.reload();" target="_self" style="color: rgb(0, 255, 0);">刷新页面</a>`;
+            lastUpdatedElement.innerHTML = `连接服务器失败，${remainingSeconds} 秒后重新连接... <a href="javascript:location.reload();" target="_self" style="color: rgb(0, 255, 0);">刷新页面</a>`;
         } else if (remainingSeconds <= 0) {
             clearInterval(countdownInterval);
         }
@@ -239,8 +239,8 @@ function setupEventSource() {
     evtSource.addEventListener('update', function (event) {
         lastEventTime = Date.now(); // 更新最后收到消息的时间
 
-        console.log('[SSE] 收到数据更新');
         const data = JSON.parse(event.data);
+        console.log(`[SSE] 收到数据更新: ${data}`);
 
         // 处理更新数据
         if (data.success) {
@@ -258,7 +258,7 @@ function setupEventSource() {
 
     // 监听心跳事件
     evtSource.addEventListener('heartbeat', function (event) {
-        console.log('[SSE] 收到心跳:', event.data);
+        console.log(`[SSE] 收到心跳: ${JSON.parse(event.data)}`);
         lastEventTime = Date.now(); // 更新最后收到消息的时间
 
         // 更新连接状态UI (如果有)
